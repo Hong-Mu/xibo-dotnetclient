@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright (C) 2020 Xibo Signage Ltd
  *
  * Xibo - Digital Signage - http://www.xibo.org.uk
@@ -488,7 +488,7 @@ namespace XiboClient.Rendering
             // If we have an edge fallback, use it, otherwise see if the URL provided is in the white list.
             if (ApplicationSettings.Default.FallbackToEdge)
             {
-                return new WebEdge(options);
+                return new WebHwnd(options);
             }
             else if (!string.IsNullOrEmpty(options.uri) && !string.IsNullOrEmpty(ApplicationSettings.Default.EdgeBrowserWhitelist)) 
             {
@@ -502,7 +502,7 @@ namespace XiboClient.Rendering
                 {
                     if (url.Contains(white))
                     {
-                        return new WebEdge(options);
+                        return new WebHwnd(options);
                     }
                 }
             }
@@ -524,7 +524,7 @@ namespace XiboClient.Rendering
             }
             else if (type == "edge")
             {
-                media = new WebEdge(options);
+                media = new WebHwnd(options);
             }
             else if (type == "cef")
             {

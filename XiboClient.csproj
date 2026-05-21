@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -192,9 +192,9 @@
     <Compile Include="Rendering\Audio.cs" />
     <Compile Include="Rendering\Flash.cs" />
     <Compile Include="Rendering\LibMpv.cs" />
-    <Compile Include="Rendering\MpvHost.cs" />
+    <Compile Include="Rendering\MpvHwndHost.cs" />
     <Compile Include="Rendering\Image.cs" />
-    <Compile Include="Rendering\ImageMpv.cs" />
+    <Compile Include="Rendering\ImageHwnd.cs" />
     <Compile Include="Rendering\Media.xaml.cs">
       <DependentUpon>Media.xaml</DependentUpon>
     </Compile>
@@ -202,9 +202,9 @@
     <Compile Include="Rendering\ShellCommand.cs" />
     <Compile Include="Rendering\Spacer.cs" />
     <Compile Include="Rendering\Video.cs" />
-    <Compile Include="Rendering\VideoMpv.cs" />
+    <Compile Include="Rendering\VideoHwnd.cs" />
     <Compile Include="Rendering\WebCef.cs" />
-    <Compile Include="Rendering\WebEdge.cs" />
+    <Compile Include="Rendering\WebHwnd.cs" />
     <Compile Include="Rendering\WebIe.cs" />
     <Compile Include="Rendering\WebMedia.cs" />
     <Compile Include="Log\XiboTraceListener.cs" />

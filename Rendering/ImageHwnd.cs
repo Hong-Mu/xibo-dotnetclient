@@ -6,18 +6,18 @@ using System.Windows;
 namespace XiboClient.Rendering
 {
     /// <summary>
-    /// libmpv(HwndHost) 기반 이미지 렌더러.
-    /// mpv 모드에서 image 타입도 동일한 Win32 경로로 렌더링한다.
+    /// libmpv(HwndHost) 기반 ?��?지 ?�더??
+    /// mpv 모드?�서 image ?�?�도 ?�일??Win32 경로�??�더링한??
     /// </summary>
-    class ImageMpv : Media
+    class ImageHwnd : Media
     {
-        private MpvHost _mpvHost;
+        private MpvHwndHost _MpvHwndHost;
         private readonly string _filePath;
         private readonly bool _stretch;
         private readonly int _volume;
         private readonly bool _muted;
 
-        public ImageMpv(MediaOptions options) : base(options)
+        public ImageHwnd(MediaOptions options) : base(options)
         {
             _filePath = Uri.UnescapeDataString(options.uri).Replace('+', ' ');
             _stretch = options.Dictionary.Get("scaleType", "aspect").ToLowerInvariant() == "stretch";
@@ -30,50 +30,55 @@ namespace XiboClient.Rendering
             Uri uri = new Uri(_filePath);
             if (uri.IsFile && !File.Exists(_filePath))
             {
-                Trace.WriteLine(new LogMessage("ImageMpv", "RenderMedia: " + this.Id + ", File " + _filePath + " not found."));
+                Trace.WriteLine(new LogMessage("ImageHwnd", "RenderMedia: " + this.Id + ", File " + _filePath + " not found."));
                 throw new FileNotFoundException();
             }
 
-            _mpvHost = new MpvHost
+            _MpvHwndHost = new MpvHwndHost
             {
                 Width = Width,
                 Height = Height,
                 Visibility = Visibility.Visible
             };
 
-            base.RenderMedia(position);
-
             try
             {
-                MediaScene.Children.Add(_mpvHost);
+                MediaScene.Children.Add(_MpvHwndHost);
 
-                _mpvHost.SetStretch(_stretch);
-                _mpvHost.SetVolume(_volume);
-                _mpvHost.SetMute(_muted);
+                _MpvHwndHost.SetStretch(_stretch);
+                _MpvHwndHost.SetVolume(_volume);
+                _MpvHwndHost.SetMute(_muted);
                 // Still image should stay visible for widget duration.
-                _mpvHost.SetPause(true);
-                _mpvHost.Load(_filePath);
+                _MpvHwndHost.SetPause(true);
+                _MpvHwndHost.Load(_filePath);
 
-                Trace.WriteLine(new LogMessage("ImageMpv", "RenderMedia: " + this.Id + " loaded."), LogType.Audit.ToString());
+                Trace.WriteLine(new LogMessage("ImageHwnd", "RenderMedia: " + this.Id + " loaded."), LogType.Audit.ToString());
+
+                base.RenderMedia(position);
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(new LogMessage("ImageMpv", "RenderMedia: " + ex.Message), LogType.Error.ToString());
+                Trace.WriteLine(new LogMessage("ImageHwnd", "RenderMedia: " + ex.Message), LogType.Error.ToString());
                 throw;
             }
         }
 
         public override void Stopped()
         {
-            Trace.WriteLine(new LogMessage("ImageMpv", "Stopped: " + this.Id), LogType.Audit.ToString());
+            Trace.WriteLine(new LogMessage("ImageHwnd", "Stopped: " + this.Id), LogType.Audit.ToString());
 
-            if (_mpvHost != null)
+            if (_MpvHwndHost != null)
             {
-                _mpvHost.Dispose();
-                _mpvHost = null;
+                _MpvHwndHost.Dispose();
+                _MpvHwndHost = null;
             }
 
             base.Stopped();
+        }
+
+        public override void ApplyNativeZOrder()
+        {
+            _MpvHwndHost?.SetNativeZIndex(NativeZIndex);
         }
     }
 }

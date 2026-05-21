@@ -31,7 +31,7 @@ namespace XiboClient.Rendering
     /// this is referred to as an "airspace" issue
     /// https://github.com/MicrosoftEdge/WebView2Feedback/issues/356
     /// </summary>
-    class WebEdge : WebMedia
+    class WebHwnd : WebMedia
     {
         private readonly WebView2 webView;
         private bool _webViewInitialised = false;
@@ -51,7 +51,7 @@ namespace XiboClient.Rendering
         /// Create
         /// </summary>
         /// <param name="options"></param>
-        public WebEdge(MediaOptions options) : base(options)
+        public WebHwnd(MediaOptions options) : base(options)
         {
             this.hasBackgroundColor = !string.IsNullOrEmpty(options.Dictionary.Get("backgroundColor", ""));
 
@@ -205,7 +205,7 @@ namespace XiboClient.Rendering
         /// Html updated
         /// </summary>
         /// <param name="url"></param>
-        private void WebEdge_HtmlUpdatedEvent(string url)
+        private void WebHwnd_HtmlUpdatedEvent(string url)
         {
             if (this.webView != null && webView.CoreWebView2 != null)
             {
@@ -259,7 +259,7 @@ namespace XiboClient.Rendering
         /// </summary>
         public override void Stopped()
         {
-            HtmlUpdatedEvent -= WebEdge_HtmlUpdatedEvent;
+            HtmlUpdatedEvent -= WebHwnd_HtmlUpdatedEvent;
             this.webView.NavigationCompleted -= WebView_NavigationCompleted;
             this.webView.CoreWebView2InitializationCompleted -= WebView_CoreWebView2InitializationCompleted;
             this.webView.Dispose();

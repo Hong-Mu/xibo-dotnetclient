@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright (C) 2023 Xibo Signage Ltd
  *
  * Xibo - Digital Signage - https://xibosignage.com
@@ -992,3 +992,4 @@ namespace XiboClient.Rendering
         }
     }
 }
+
