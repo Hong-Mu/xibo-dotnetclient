@@ -642,6 +642,8 @@ namespace XiboClient.Rendering
             // Set the media width/height
             media.Width = Width;
             media.Height = Height;
+            media.NativeZIndex = this.ZIndex;
+            media.ApplyNativeZOrder();
 
             // Sets up the timer for this media, if it hasn't already been set
             if (media.Duration == 0)
