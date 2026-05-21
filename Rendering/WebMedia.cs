@@ -479,11 +479,7 @@ namespace XiboClient.Rendering
                 return new WebIe(options);
             }
 
-            // If this is a HTML widget, then always return with CEF
-            if (isHtmlWidget)
-            {
-                return new WebCef(options);
-            }
+            // The isHtmlWidget check used to force WebCef here. Removed to allow Edge fallback.
 
             // If we have an edge fallback, use it, otherwise see if the URL provided is in the white list.
             if (ApplicationSettings.Default.FallbackToEdge)
