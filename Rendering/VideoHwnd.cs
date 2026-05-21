@@ -180,7 +180,7 @@ namespace XiboClient.Rendering
                 throw new FileNotFoundException();
             }
 
-            _MpvHwndHost = new MpvHwndHost();
+            _MpvHwndHost = new MpvHwndHost();_MpvHwndHost.SetNativeZIndex(NativeZIndex);
 
             if (!ShouldBeVisible)
             {

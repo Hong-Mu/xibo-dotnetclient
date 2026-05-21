@@ -40,6 +40,7 @@ namespace XiboClient.Rendering
                 Height = Height,
                 Visibility = Visibility.Visible
             };
+            _MpvHwndHost.SetNativeZIndex(NativeZIndex);
 
             try
             {
@@ -82,3 +83,4 @@ namespace XiboClient.Rendering
         }
     }
 }
+
