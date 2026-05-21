@@ -664,7 +664,10 @@ namespace XiboClient.Rendering
             {
                 case "image":
                     options.uri = ApplicationSettings.Default.LibraryPath + @"\" + options.uri;
-                    media = new Image(options);
+                    if (IsLibMpv())
+                        media = new ImageMpv(options);
+                    else
+                        media = new Image(options);
                     break;
 
                 case "powerpoint":

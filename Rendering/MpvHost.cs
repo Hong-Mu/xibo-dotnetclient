@@ -119,6 +119,7 @@ namespace XiboClient.Rendering
         private bool? _pendingStretch;
         private int? _pendingVolume;
         private bool? _pendingMute;
+        private bool? _pendingPause;
 
         [StructLayout(LayoutKind.Sequential)]
         struct mpv_event_log_message {
@@ -323,6 +324,7 @@ namespace XiboClient.Rendering
             if (_pendingStretch.HasValue) SetStretch(_pendingStretch.Value);
             if (_pendingVolume.HasValue) SetVolume(_pendingVolume.Value);
             if (_pendingMute.HasValue) SetMute(_pendingMute.Value);
+            if (_pendingPause.HasValue) SetPause(_pendingPause.Value);
 
             // Load pending file if any
             if (!string.IsNullOrEmpty(_pendingFilePath))
@@ -473,6 +475,18 @@ namespace XiboClient.Rendering
             if (_mpvHandle == IntPtr.Zero) return;
             int rc = LibMpv.Command(_mpvHandle, "set", "pause", "no");
             Trace.WriteLine($"MpvHost: Play() rc={rc}", "MpvHost");
+        }
+
+        public void SetPause(bool paused)
+        {
+            if (_mpvHandle == IntPtr.Zero)
+            {
+                _pendingPause = paused;
+                return;
+            }
+
+            int rc = LibMpv.Command(_mpvHandle, "set", "pause", paused ? "yes" : "no");
+            Trace.WriteLine($"MpvHost: SetPause({paused}) rc={rc}", "MpvHost");
         }
 
         public void SetVolume(int volume)

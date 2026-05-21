@@ -194,6 +194,7 @@
     <Compile Include="Rendering\LibMpv.cs" />
     <Compile Include="Rendering\MpvHost.cs" />
     <Compile Include="Rendering\Image.cs" />
+    <Compile Include="Rendering\ImageMpv.cs" />
     <Compile Include="Rendering\Media.xaml.cs">
       <DependentUpon>Media.xaml</DependentUpon>
     </Compile>
