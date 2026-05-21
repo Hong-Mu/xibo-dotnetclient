@@ -193,6 +193,7 @@
     <Compile Include="Rendering\Flash.cs" />
     <Compile Include="Rendering\LibMpv.cs" />
     <Compile Include="Rendering\MpvHwndHost.cs" />
+    <Compile Include="Rendering\NativeZOrderManager.cs" />
     <Compile Include="Rendering\Image.cs" />
     <Compile Include="Rendering\ImageHwnd.cs" />
     <Compile Include="Rendering\Media.xaml.cs">

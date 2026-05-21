@@ -31,8 +31,12 @@ namespace XiboClient.Rendering
     /// this is referred to as an "airspace" issue
     /// https://github.com/MicrosoftEdge/WebView2Feedback/issues/356
     /// </summary>
-    class WebHwnd : WebMedia
+    class WebHwnd : WebMedia, INativeZIndexHost
     {
+        public IntPtr Hwnd => webView?.Handle ?? IntPtr.Zero;
+        public long HostSequenceCounter { get; private set; }
+        public bool IsDisposed { get; private set; }
+
         private readonly WebView2 webView;
         private bool _webViewInitialised = false;
         private bool _webViewError = false;
@@ -53,6 +57,9 @@ namespace XiboClient.Rendering
         /// <param name="options"></param>
         public WebHwnd(MediaOptions options) : base(options)
         {
+            HostSequenceCounter = NativeZOrderManager.GetNextSequence();
+            NativeZOrderManager.Register(this);
+
             this.hasBackgroundColor = !string.IsNullOrEmpty(options.Dictionary.Get("backgroundColor", ""));
 
             this.webView = new WebView2
@@ -140,6 +147,14 @@ namespace XiboClient.Rendering
             }
         }
 
+        public override void ApplyNativeZOrder()
+        {
+            if (this.webView != null && this.webView.Handle != IntPtr.Zero)
+            {
+                NativeZOrderManager.ApplyAll(Dispatcher);
+            }
+        }
+
         /// <summary>
         /// WebView has finished initialising.
         /// </summary>
@@ -147,6 +162,7 @@ namespace XiboClient.Rendering
         /// <param name="e"></param>
         private void WebView_CoreWebView2InitializationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs e)
         {
+            ApplyNativeZOrder();
             if (e.IsSuccess)
             {
                 webView.CoreWebView2.Settings.IsPinchZoomEnabled = isPinchToZoomEnabled;
@@ -259,6 +275,9 @@ namespace XiboClient.Rendering
         /// </summary>
         public override void Stopped()
         {
+            IsDisposed = true;
+            NativeZOrderManager.Unregister(this);
+
             HtmlUpdatedEvent -= WebHwnd_HtmlUpdatedEvent;
             this.webView.NavigationCompleted -= WebView_NavigationCompleted;
             this.webView.CoreWebView2InitializationCompleted -= WebView_CoreWebView2InitializationCompleted;

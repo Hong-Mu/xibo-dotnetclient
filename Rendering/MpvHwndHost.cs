@@ -30,10 +30,10 @@ using System.Windows.Threading;
 namespace XiboClient.Rendering
 {
     /// <summary>
-    /// WPF HwndHost????º”??mpv ??∑π??æÓ??Win32 ??Ωƒ √¢¿∏????∫£??«œ??ƒ¡∆Æ??
-    /// WM_ERASEBKGND??∞À??¿∏??√≥∏Æ????√ ±‚??????ªˆ ??∑°???? πÊ????¥Ÿ.
+    /// WPF HwndHost????ÏÜç??mpv ??Î†à??Ïñ¥??Win32 ??Ïãù Ï∞ΩÏúº????Î≤†??Ìïò??Ïª®Ìä∏??
+    /// WM_ERASEBKGND??Í≤Ä??Ïúº??Ï≤òÎ¶¨????Ï¥àÍ∏∞??????ÏÉâ ??Îûò???? Î∞©????Îã§.
     /// </summary>
-    internal class MpvHwndHost : HwndHost
+    internal class MpvHwndHost : HwndHost, INativeZIndexHost
     {
         // Runtime-configurable guard to hide/show the host window around VO init.
         private readonly bool _useWindowTimingGuard;
@@ -89,7 +89,7 @@ namespace XiboClient.Rendering
         private const uint SWP_NOACTIVATE = 0x0010;
         private const uint SWP_NOOWNERZORDER = 0x0200;
 
-        // ??ªˆ/??ªˆ ??∑°??πÊ??
+        // ??ÏÉâ/??ÏÉâ ??Îûò??Î∞©??
         private const int BLACK_BRUSH = 4;
         private const int WM_ERASEBKGND = 0x0014;
         private const int WM_PAINT = 0x000F;
@@ -125,12 +125,13 @@ namespace XiboClient.Rendering
         public event System.Action<string> MediaFailed;
         public event System.Action<int> EndFile;
 
-        // VIDEO_RECONFIG ??±Ó¡ˆ WM_PAINT??∞À??¿∏??√≥∏Æ????ªˆ ??∑°??πÊ??
+        // VIDEO_RECONFIG ??ÍπåÏßÄ WM_PAINT??Í≤Ä??Ïúº??Ï≤òÎ¶¨????ÏÉâ ??Îûò??Î∞©??
         private volatile bool _videoReady = false;
 
-        private static readonly object HostRegistryLock = new object();
-        private static readonly List<MpvHwndHost> HostRegistry = new List<MpvHwndHost>();
-        private static long HostSequenceCounter = 0;
+        public IntPtr Hwnd => _hwndHost;
+        public int NativeZIndex => _nativeZIndex;
+        public long HostSequenceCounter => _hostSequence;
+        public bool IsDisposed => _disposed;
 
         private IntPtr _mpvHandle = IntPtr.Zero;
         private IntPtr _hwndHost = IntPtr.Zero;
@@ -143,7 +144,7 @@ namespace XiboClient.Rendering
         private LibMpv.MpvWakeupCallback _wakeupCallback;
         private readonly AutoResetEvent _wakeupEvent = new AutoResetEvent(false);
 
-        // BuildWindowCore ??¿¸??Load/SetVolume ??¿Ã ??√‚??∞ÊøÏ????«— ??????
+        // BuildWindowCore ??Ï†Ñ??Load/SetVolume ??Ïù¥ ??Ï∂ú??Í≤ΩÏö∞????Ìïú ??????
         private string _pendingFilePath;
         private bool? _pendingStretch;
         private int? _pendingVolume;
@@ -242,7 +243,7 @@ namespace XiboClient.Rendering
                 return new IntPtr(1);
             }
 
-            // VIDEO_RECONFIG ??±Ó¡ˆ WM_PAINT??∞À??¿∏??√≥∏Æ (mpv GPU ??¥ı??√ ±‚??????ªˆ ??∑°??πÊ??)
+            // VIDEO_RECONFIG ??ÍπåÏßÄ WM_PAINT??Í≤Ä??Ïúº??Ï≤òÎ¶¨ (mpv GPU ??Îçî??Ï¥àÍ∏∞??????ÏÉâ ??Îûò??Î∞©??)
             if (_useWindowTimingGuard && msg == WM_PAINT && !_videoReady)
             {
                 PAINTSTRUCT ps;
@@ -271,8 +272,8 @@ namespace XiboClient.Rendering
         }
 
         /// <summary>
-        /// mpv ??Ω∫??Ω∫??√ ±‚??«œ????∫•??∑Á«¡ ??∑π???? ??¿€??¥Ÿ.
-        /// BuildWindowCore??º≠ ??√‚??????????¡°??hwnd∞° ??»ø??¥Ÿ.
+        /// mpv ??Ïä§??Ïä§??Ï¥àÍ∏∞??Ìïò????Î≤§??Î£®ÌîÑ ??Î†à???? ??Ïûë??Îã§.
+        /// BuildWindowCore??ÏÑú ??Ï∂ú??????????Ï†ê??hwndÍ∞Ä ??Ìö®??Îã§.
         /// </summary>
         private void InitMpv(IntPtr hwnd)
         {
@@ -295,26 +296,26 @@ namespace XiboClient.Rendering
             if (_mpvHandle == IntPtr.Zero)
                 throw new InvalidOperationException("mpv_create() returned NULL.");
 
-            // ƒ‹º÷ √‚∑¬ ∫Ò»∞??»≠ / ∑Œ±◊??Trace∑Œ∏∏ ??¡˝
+            // ÏΩòÏÜî Ï∂úÎ†• ÎπÑÌôú??Ìôî / Î°úÍ∑∏??TraceÎ°úÎßå ??Ïßë
             SetOptionStringChecked("terminal", "no");
             SetOptionStringChecked("msg-level", "all=v");
 
-            // ??Ω∫??????µÈ??mpv????¥ﬁ????¥Á ????ø° ??¥ı??
+            // ??Ïä§??????Îì§??mpv????Îã¨????Îãπ ????Ïóê ??Îçî??
             long wid = hwnd.ToInt64();
             int widRc = LibMpv.mpv_set_option(_mpvHandle, "wid", LibMpv.MPV_FORMAT_INT64, ref wid);
             if (widRc < 0)
                 throw new InvalidOperationException("MpvHwndHost: mpv_set_option(wid) failed rc=" + widRc);
 
-            // ??ø¿??≈©/??¿Ã?????? OSD°§??∑¬ ∫Ò»∞??»≠
-            // keep-open=yes: EOF ??ø°??∏∂??????∑π??¿ª ????????ªˆ ??πÊ??.
-            // SeekToStart() + Play()??∑Á«¡??±∏«ˆ??????¥Ÿ.
+            // ??Ïò§??ÌÅ¨/??Ïù¥?????? OSD¬∑??Î†• ÎπÑÌôú??Ìôî
+            // keep-open=yes: EOF ??Ïóê??Îßà??????Î†à??ÏùÑ ????????ÏÉâ ??Î∞©??.
+            // SeekToStart() + Play()??Î£®ÌîÑ??Íµ¨ÌòÑ??????Îã§.
             SetOptionStringChecked("keep-open", "yes", required: true);
             SetOptionStringChecked("osc", "no");
             SetOptionStringChecked("osd-level", "0");
             SetOptionStringChecked("input-default-bindings", "no");
             SetOptionStringChecked("input-vo-keyboard", "no");
 
-            // vo / hwdec: Player Options??MPV ????????¡§??????øÎ
+            // vo / hwdec: Player Options??MPV ????????Ï†ï??????Ïö©
             string vo = ApplicationSettings.Default.MpvVo;
             if (string.IsNullOrWhiteSpace(vo)) vo = "direct3d";
             SetOptionStringChecked("vo", vo, required: true);
@@ -323,11 +324,11 @@ namespace XiboClient.Rendering
             if (string.IsNullOrWhiteSpace(hwdec)) hwdec = "auto-safe";
             SetOptionStringChecked("hwdec", hwdec);
 
-            // πË∞Ê ??º«?? mode/background-color??∫–∏Æ??æÓ ??æÓ ????¡ˆ??«ÿ????¥Ÿ.
+            // Î∞∞Í≤Ω ??ÏÖò?? mode/background-color??Î∂ÑÎ¶¨??Ïñ¥ ??Ïñ¥ ????ÏßÄ??Ìï¥????Îã§.
             SetOptionStringChecked("background", "color");
             SetOptionStringChecked("background-color", "#000000");
 
-            // √ﬂ?? ??º«: "key=value" ??¡Ÿæø
+            // Ï∂î?? ??ÏÖò: "key=value" ??Ï§ÑÏî©
             string extra = ApplicationSettings.Default.MpvExtraOptions;
             if (!string.IsNullOrWhiteSpace(extra))
             {
@@ -360,7 +361,7 @@ namespace XiboClient.Rendering
             LibMpv.mpv_request_event(_mpvHandle, LibMpv.MPV_EVENT_END_FILE, 1);
             LibMpv.mpv_request_event(_mpvHandle, LibMpv.MPV_EVENT_VIDEO_RECONFIG, 1);
 
-            // keep-open=yes ??≈¬??º≠ EOF??∞®????±‚ ??«ÿ eof-reached ??∑Œ??∆º ∞®Ω√
+            // keep-open=yes ??ÌÉú??ÏÑú EOF??Í∞ê????Í∏∞ ??Ìï¥ eof-reached ??Î°ú??Ìã∞ Í∞êÏãú
             LibMpv.mpv_observe_property(_mpvHandle, 1, "eof-reached", LibMpv.MPV_FORMAT_FLAG);
 
             _wakeupCallback = OnWakeup;
@@ -435,7 +436,7 @@ namespace XiboClient.Rendering
                                 if (!_videoReady)
                                 {
                                     _videoReady = true;
-                                    // ??VIDEO_RECONFIG: VO ±∏º∫ ??∑·. √¢¿ª ??Ω√????ªˆ ??∑°??πÊ??
+                                    // ??VIDEO_RECONFIG: VO Íµ¨ÏÑ± ??Î£å. Ï∞ΩÏùÑ ??Ïãú????ÏÉâ ??Îûò??Î∞©??
                                     if (_useWindowTimingGuard && _hwndHost != IntPtr.Zero)
                                         ShowWindow(_hwndHost, SW_SHOWNA);
                                 }
@@ -501,7 +502,7 @@ namespace XiboClient.Rendering
             }
 
             _videoReady = false;
-            // ??¿Ω ??¿œ ∑ŒµÂ ??√¢¿ª ??Ω√ ??∞‹ ??ªˆ ??∑°??πÊ?? (VIDEO_RECONFIG??º≠ ??Ω√ ??Ω√??
+            // ??Ïùå ??Ïùº Î°úÎìú ??Ï∞ΩÏùÑ ??Ïãú ??Í≤® ??ÏÉâ ??Îûò??Î∞©?? (VIDEO_RECONFIG??ÏÑú ??Ïãú ??Ïãú??
             if (_useWindowTimingGuard && _hwndHost != IntPtr.Zero)
                 ShowWindow(_hwndHost, SW_HIDE);
             SyncHostWindowSize("Load");
@@ -518,68 +519,18 @@ namespace XiboClient.Rendering
 
         public void ApplyNativeZOrder()
         {
-            ApplyAllNativeZOrder(_dispatcher);
-        }
-
-        public static void ApplyAllNativeZOrder(Dispatcher dispatcher = null)
-        {
-            // ALWAYS defer if dispatcher is provided, so WPF finishes its layout/SetWindowPos first.
-            if (dispatcher != null)
-            {
-                dispatcher.BeginInvoke(new System.Action(() => ApplyAllNativeZOrder(null)), DispatcherPriority.Render);
-                return;
-            }
-
-            List<MpvHwndHost> orderedHosts;
-            lock (HostRegistryLock)
-            {
-                HostRegistry.RemoveAll(host => host == null || host._disposed || host._hwndHost == IntPtr.Zero);
-                // Sort DESCENDING: highest Z-Index first.
-                HostRegistry.Sort((left, right) =>
-                {
-                    int z = right._nativeZIndex.CompareTo(left._nativeZIndex);
-                    return z != 0 ? z : right._hostSequence.CompareTo(left._hostSequence);
-                });
-                orderedHosts = new List<MpvHwndHost>(HostRegistry);
-            }
-
-            // We place the highest Z-index window at HWND_TOP.
-            // Then we place the next window BELOW it, and so on.
-            IntPtr insertAfter = IntPtr.Zero; // HWND_TOP
-            foreach (MpvHwndHost host in orderedHosts)
-            {
-                SetWindowPos(
-                    host._hwndHost,
-                    insertAfter,
-                    0,
-                    0,
-                    0,
-                    0,
-                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-                
-                // The next lower Z-index window will be inserted BELOW this one
-                insertAfter = host._hwndHost;
-            }
+            NativeZOrderManager.ApplyAll(_dispatcher);
         }
 
         private void RegisterHost()
         {
-            lock (HostRegistryLock)
-            {
-                if (!HostRegistry.Contains(this))
-                {
-                    _hostSequence = ++HostSequenceCounter;
-                    HostRegistry.Add(this);
-                }
-            }
+            _hostSequence = NativeZOrderManager.GetNextSequence();
+            NativeZOrderManager.Register(this);
         }
 
         private void UnregisterHost()
         {
-            lock (HostRegistryLock)
-            {
-                HostRegistry.Remove(this);
-            }
+            NativeZOrderManager.Unregister(this);
         }
 
         private void SyncHostWindowSize(string reason)
