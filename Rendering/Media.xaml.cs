@@ -648,10 +648,10 @@ namespace XiboClient.Rendering
         /// <param name="options"></param>
         /// <returns></returns>
         /// <summary>
-        /// ?�정???�상 ?�더�??�진??libmpv?��? ?�인.
-        /// OptionsForm??Video Engine ?�롭?�운 ?�택값을 기�??�로 ?�단.
+        /// ?�정???�상 ?�더�??�진??libmpv?��? ?�인.
+        /// OptionsForm??Video Engine ?�롭?�운 ?�택값을 기�??�로 ?�단.
         /// </summary>
-        /// <returns>libmpv ?�진???�택??경우 true, WindowsMediaPlayer??경우 false</returns>
+        /// <returns>libmpv ?�진???�택??경우 true, WindowsMediaPlayer??경우 false</returns>
         private static bool IsLibMpv()
         {
             return string.Equals(ApplicationSettings.Default.VideoRenderingEngine, "libmpv", StringComparison.OrdinalIgnoreCase);
@@ -677,7 +677,7 @@ namespace XiboClient.Rendering
 
                 case "video":
                     options.uri = ApplicationSettings.Default.LibraryPath + @"\" + options.uri;
-                    // libmpv ?�진?�면 VideoHwnd, ?�니�?기존 WPF MediaElement 기반 Video ?�용
+                    // libmpv ?�진?�면 VideoHwnd, ?�니�?기존 WPF MediaElement 기반 Video ?�용
                     if (IsLibMpv())
                         media = new VideoHwnd(options);
                     else
@@ -686,7 +686,7 @@ namespace XiboClient.Rendering
 
                 case "localvideo":
                     // Local video does not update the URI with the library path, it just takes what has been provided in the Widget.
-                    // libmpv ?�진?�면 VideoHwnd, ?�니�?기존 WPF MediaElement 기반 Video ?�용
+                    // libmpv ?�진?�면 VideoHwnd, ?�니�?기존 WPF MediaElement 기반 Video ?�용
                     if (IsLibMpv())
                         media = new VideoHwnd(options);
                     else
@@ -734,7 +734,7 @@ namespace XiboClient.Rendering
                     break;
 
                 case "hls":
-                    media = new WebHwnd(options);
+                    media = new WebCef(options);
                     break;
 
                 default:

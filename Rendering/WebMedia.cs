@@ -479,34 +479,6 @@ namespace XiboClient.Rendering
                 return new WebIe(options);
             }
 
-            // If this is a HTML widget, use Edge (WebHwnd)
-            if (isHtmlWidget)
-            {
-                return new WebHwnd(options);
-            }
-
-            // If we have an edge fallback, use it, otherwise see if the URL provided is in the white list.
-            if (ApplicationSettings.Default.FallbackToEdge)
-            {
-                return new WebHwnd(options);
-            }
-            else if (!string.IsNullOrEmpty(options.uri) && !string.IsNullOrEmpty(ApplicationSettings.Default.EdgeBrowserWhitelist)) 
-            {
-                // Decode the URL
-                string url = Uri.UnescapeDataString(options.uri);
-
-                // Split the white list by comma
-                string[] whiteList = ApplicationSettings.Default.EdgeBrowserWhitelist.Split(',');
-
-                foreach (string white in whiteList)
-                {
-                    if (url.Contains(white))
-                    {
-                        return new WebHwnd(options);
-                    }
-                }
-            }
-
             return new WebCef(options);
         }
 
@@ -522,11 +494,7 @@ namespace XiboClient.Rendering
             {
                 media = new WebIe(options);
             }
-            else if (type == "edge")
-            {
-                media = new WebHwnd(options);
-            }
-            else if (type == "cef")
+            else if (type == "edge" || type == "cef")
             {
                 media = new WebCef(options);
             }
